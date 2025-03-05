@@ -33,7 +33,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
+	"log"
 	"net"
 	"os"
 	"path"
@@ -75,7 +75,7 @@ func Unixgram(ifName string) (Conn, error) {
 	var err error
 	uc := &unixgramConn{}
 
-	local, err := ioutil.TempFile("/tmp", "wpa_supplicant")
+	local, err := os.CreateTemp("/tmp", "wpa_supplicant")
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +148,8 @@ func (uc *unixgramConn) readLoop() {
 			continue
 		}
 
+		log.Println("Received", string(buf))
+
 		// Unsolicited messages are preceded by a priority
 		// specification, e.g. "<1>message".  If there's no priority,
 		// default to 2 (info) and assume it's the response to
@@ -219,8 +221,10 @@ func (uc *unixgramConn) readUnsolicited() {
 
 // cmd executes a command and waits for a reply.
 func (uc *unixgramConn) cmd(cmd string) ([]byte, error) {
+	fmt.Println("Locking")
 	uc.cmdLock.Lock()
 	defer uc.cmdLock.Unlock()
+	fmt.Println("Locked")
 
 	_, err := uc.c.Write([]byte(cmd))
 	if err != nil {
