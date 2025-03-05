@@ -1,3 +1,3 @@
-module pifke.org/wpasupplicant
+module github.com/Mnib/wpasupplicant
 
-go 1.13
+go 1.24
